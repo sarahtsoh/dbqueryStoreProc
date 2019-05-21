@@ -159,6 +159,7 @@ namespace Samples
             //        @"Server=(localdb)\mssqllocaldb;Database=Sample.QueryTypes;Trusted_Connection=True;ConnectRetryCount=0;")
             //    .UseLoggerFactory(_loggerFactory);
 
+            //populate the connection string
             optionsBuilder
                 .UseSqlServer(
                     @"Server=?\SQLEXPRESS;Database=Sample.QueryTypes;Trusted_Connection=True;ConnectRetryCount=0;")
