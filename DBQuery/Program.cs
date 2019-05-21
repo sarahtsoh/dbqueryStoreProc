@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,18 +17,24 @@ namespace Samples
     {
         private static void Main()
         {
-            SetupDatabase();
+           // SetupDatabase();
 
             using (var db = new BloggingContext())
             {
                 #region Query
                 var postCounts = db.BlogPostCounts.ToList();
-
+                var param = new SqlParameter("@FirstName", "Bill");
 
                 //lst = await this.Query<SpGetProductByPriceGreaterThan1000>().FromSql(sqlQuery).ToListAsync();
-                string sqlQuery = "EXEC BlogPostsCountTest6";
-                var x = db.Query<BlogPostsCountTest6>().FromSql(sqlQuery);
-               
+                string sqlQuery = "EXEC BlogPostsCountTest6 @FirstName";
+                var x = db.Query<BlogPostsCountTest6>().FromSql(sqlQuery, param);
+
+                foreach (var postCount1 in x)
+                {
+                    Console.WriteLine($"{postCount1.Name} has {postCount1.PostCount} posts.{postCount1.FirstName}");
+                    Console.WriteLine();
+                }
+
 
                 foreach (var postCount in postCounts)
                 {
@@ -120,8 +127,10 @@ namespace Samples
                     //           ");
 
                     db.Database.ExecuteSqlCommand(
-                   @"CREATE procedure BlogPostsCountTest6 AS 
-                        SELECT b.Name, Count(p.PostId) as PostCount 
+                   @"CREATE procedure BlogPostsCountTest6 
+                        @FirstName varchar(50)
+                        AS
+                        SELECT b.Name, Count(p.PostId) as PostCount,@FirstName as FirstName  
                         FROM Blogs b
                         JOIN Posts p on p.BlogId = b.BlogId
                         GROUP BY b.Name");
@@ -152,7 +161,7 @@ namespace Samples
 
             optionsBuilder
                 .UseSqlServer(
-                    @"Server=DESKTOP-ITF0GM0\SQLEXPRESS;Database=Sample.QueryTypes;Trusted_Connection=True;ConnectRetryCount=0;")
+                    @"Server=?\SQLEXPRESS;Database=Sample.QueryTypes;Trusted_Connection=True;ConnectRetryCount=0;")
                 .UseLoggerFactory(_loggerFactory);
         }
 
@@ -226,6 +235,7 @@ namespace Samples
     {
         public string Name { get; set; }
         public int PostCount { get; set; }
+        public string FirstName { get; set; }
     }
 
     #endregion
